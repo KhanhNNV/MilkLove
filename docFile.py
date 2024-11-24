@@ -1,3 +1,4 @@
 with open("doc.inp", "r") as file:
     for line in file:
-        print(line + "#MilkLove")
+        print(line.strip())  
+        print("#MilkLove") 
