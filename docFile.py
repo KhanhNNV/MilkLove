@@ -1,10 +1,12 @@
-with open("doc.inp", "r") as file:
-    #read the first 2 lines and store it in 2 variables ht and kw
-    kw = file.readline().strip()
-    ht = file.readline().strip()
+with open("kw_ht.inp","r") as file:
+    key=file.read()
 
-    content = ""
-    for line in file:
-        content += line.strip() + "\n" + kw + "\n" + ht + "\n"
+with open("doc.inp", "r") as file2:
+    dem=0
+    for line in file2:
+        content = ""
+        dem+=1
+        content += f"{dem}. "+ line.strip() + "\n"+ "\n" + key + "\n"
+        print(content)
+        content = ""
 
-print(content)
