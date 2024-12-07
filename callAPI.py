@@ -1,10 +1,26 @@
 import requests
 from datetime import datetime
+import random
+import re
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
 
-def postTweet(content, execute_at,count):
+def readHeader(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        curl_command = file.read()
+
+    headers = {}
+    header_pattern = r"-H '([^:]+): ([^']+)'"
+    matches = re.findall(header_pattern, curl_command)
+
+    for match in matches:
+        header_name, header_value = match
+        headers[header_name.strip()] = header_value.strip()
+
+    return headers
+
+def postTweet(content, execute_at,count,header):
     url = "CreateScheduledTweet"
 
     data = {
@@ -21,10 +37,6 @@ def postTweet(content, execute_at,count):
         "queryId": "LCVzRQGxOaGnOnYH01NQXg"
     }
 
-    header = {
-        ''
-    }
-
     response = requests.post(url, json=data, headers=header)
     if response.status_code == 200:
         print(count)
@@ -35,21 +47,26 @@ def convertTimeToTimestamp(time_str):
     time = datetime.strptime(time_str, "%Y-%m-%d %H:%M")
     return time.timestamp()
 
-def scheduleTweets(content_list, time):
+def scheduleTweets(content_list, time,header):
     timestamp = convertTimeToTimestamp(time)
     for i, content in enumerate(content_list):
-        execute_at = timestamp + 120 * i 
-        postTweet(content, execute_at,i)
+        randomTime=random.choice([120, 180, 240, 300])
+        if (i==0):
+            execute_at=timestamp
+        else:
+            execute_at = timestamp + randomTime
+            timestamp=execute_at
+        postTweet(content, execute_at,i,header)
 
-def createContentList():
+def createContentList(fileKey,fileContent):
     content_list = []
 
     #read key and hastag
-    with open("kw_ht.inp", "r",encoding="utf-8") as file:
+    with open(fileKey, "r",encoding="utf-8") as file:
         key = file.read()
 
     #read content
-    with open("doc.inp", "r",encoding="utf-8") as file2:
+    with open(fileContent, "r",encoding="utf-8") as file2:
         count = 0
         for line in file2:
             content = ""
@@ -58,8 +75,13 @@ def createContentList():
             content_list.append(content)
     
     return content_list
-
+def readTime(file_path):
+    with open(file_path, 'r') as file:
+        time = file.readline().strip()
+    return time
 if __name__ == "__main__":
-    content_list = createContentList()
-    time = "2024-12-07 16:30"  
-    scheduleTweets(content_list, time)
+    content_list = createContentList("kw_ht.inp","test.inp")
+    header = readHeader("header.inp")
+    time = readTime("time.inp")
+    scheduleTweets(content_list, time,header)
+    
